@@ -1,0 +1,6 @@
+{
+  "name": "VitalTracker",
+  "description": "An offline-capable daily intake tracker and log for food and meds, with offline AI goal planning and a guided breathing tool.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": []
+}
