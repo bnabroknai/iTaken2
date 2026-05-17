@@ -1,9 +1,13 @@
 import { GoogleGenAI } from '@google/genai';
 import { db } from './db';
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const apiKey = process.env.GEMINI_API_KEY || 'dummy-key';
+const ai = new GoogleGenAI({ apiKey });
 
 export async function generateGoalPlan(goalTitle: string, targetDate: string) {
+  if (apiKey === 'dummy-key') {
+    return "AI Plan generation is disabled in this environment. Please set an API key.";
+  }
   try {
     // Gather context from offline DB
     const rules = await db.rules.toArray();
