@@ -1,90 +1,96 @@
 import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../lib/db';
-import { BookOpen, Send, Mic } from 'lucide-react';
-import { useSpeechDictation } from '../hooks/useSpeechDictation';
+import { Heart, Activity, CheckCircle2 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { format } from 'date-fns';
 
 export function JournalSlots() {
-  const [content, setContent] = useState('');
-  const [feeling, setFeeling] = useState('');
-  const { isListening, transcript, toggleListening, setTranscript } = useSpeechDictation();
+  const [feeling, setFeeling] = useState<string | null>(null);
+  const [painLevel, setPainLevel] = useState(0);
   
-  const entries = useLiveQuery(() => db.journal.orderBy('timestamp').reverse().limit(10).toArray());
+  const entries = useLiveQuery(() => db.journal.orderBy('timestamp').reverse().limit(5).toArray());
 
-  // Auto-fill from voice
-  if (transcript) {
-    setContent(prev => prev ? prev + ' ' + transcript : transcript);
-    setTranscript('');
-  }
-
-  const handleSave = async () => {
-    if (!content) return;
+  const handleSave = async (selectedFeeling: string) => {
     await db.journal.add({
       date: new Date().toISOString().split('T')[0],
       timestamp: Date.now(),
-      content,
-      feeling: feeling || 'Neutral'
+      content: selectedFeeling === 'Pain' ? `Reported pain level: ${painLevel}/10` : `Feeling ${selectedFeeling}`,
+      feeling: selectedFeeling
     });
-    setContent('');
-    setFeeling('');
+    setFeeling(null);
+    setPainLevel(0);
   };
 
+  const moods = [
+    { label: 'Great', icon: '😊', color: 'bg-emerald-100 text-emerald-800 border-emerald-300' },
+    { label: 'Okay', icon: '😐', color: 'bg-slate-100 text-slate-800 border-slate-300' },
+    { label: 'Not Good', icon: '😔', color: 'bg-orange-100 text-orange-800 border-orange-300' },
+  ];
+
   return (
-    <div className="mt-6 mb-6">
-      <div className="flex items-center space-x-2 text-teal-700 mb-4 px-2">
-        <BookOpen className="w-5 h-5" />
-        <h2 className="text-xl font-semibold">Daily Reflections</h2>
+    <div className="mt-8 mb-8">
+      <div className="flex items-center space-x-3 text-primary mb-6 px-2">
+        <Heart className="w-8 h-8 fill-current" />
+        <h2 className="text-3xl font-black">How I Feel</h2>
       </div>
 
-      <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 flex flex-col gap-3">
-        <input 
-          type="text"
-          placeholder="How are you feeling overall? (e.g., Tired, Great, Anxious)"
-          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-          value={feeling}
-          onChange={(e) => setFeeling(e.target.value)}
-        />
-        <div className="relative">
-          <textarea
-            placeholder="Type or dictate your reflection for the day..."
-            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 pr-12 min-h-[100px] text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-          />
+      <div className="flex flex-col gap-4">
+        {moods.map((mood) => (
           <button
-            onClick={toggleListening}
+            key={mood.label}
+            onClick={() => handleSave(mood.label)}
             className={cn(
-              "absolute bottom-3 right-3 p-2 rounded-full transition-all",
-              isListening ? "bg-red-500 text-white animate-pulse" : "bg-slate-200 text-slate-500"
+              "w-full p-6 rounded-3xl border-4 flex items-center justify-between active:scale-95 transition-transform shadow-md",
+              mood.color
             )}
           >
-            <Mic className="w-4 h-4" />
+            <span className="text-5xl">{mood.icon}</span>
+            <span className="text-3xl font-black uppercase">{mood.label}</span>
+            <div className="w-10 h-10 rounded-full border-4 border-current flex items-center justify-center">
+              <div className="w-4 h-4 rounded-full bg-current opacity-0 transition-opacity" />
+            </div>
+          </button>
+        ))}
+
+        <div className="mt-4 p-6 bg-red-50 border-4 border-alert rounded-3xl shadow-lg">
+          <div className="flex items-center space-x-3 text-alert mb-4">
+            <Activity className="w-8 h-8" />
+            <h3 className="text-2xl font-black uppercase">Report Pain</h3>
+          </div>
+          <input
+            type="range" min="0" max="10" value={painLevel}
+            onChange={(e) => setPainLevel(Number(e.target.value))}
+            className="w-full h-16 accent-alert"
+          />
+          <div className="flex justify-between text-xl font-bold text-alert mt-2">
+            <span>No Pain</span>
+            <span className="text-3xl font-black">{painLevel} / 10</span>
+            <span>Severe</span>
+          </div>
+          <button
+            onClick={() => handleSave('Pain')}
+            className="w-full mt-6 bg-alert text-white py-5 rounded-2xl text-2xl font-black shadow-xl active:scale-95 transition-transform"
+          >
+            LOG PAIN LEVEL
           </button>
         </div>
-        <button
-          onClick={handleSave}
-          disabled={!content}
-          className="bg-teal-600 text-white rounded-xl py-3 font-medium flex items-center justify-center space-x-2 disabled:opacity-50"
-        >
-          <Send className="w-4 h-4" />
-          <span>Save Entry</span>
-        </button>  
       </div>
 
-      <div className="mt-4 space-y-3">
+      <div className="mt-8 space-y-4">
+        <h3 className="text-xl font-bold text-slate-500 px-2">Recent Status</h3>
         {entries?.map(entry => (
-          <div key={entry.id} className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+          <div key={entry.id} className="bg-white p-5 rounded-2xl shadow-sm border-2 border-slate-100 flex items-center justify-between">
+            <div className="flex flex-col">
+              <span className="text-sm font-bold text-slate-400 uppercase">
                 {format(entry.timestamp, 'MMM d, h:mm a')}
               </span>
-              <span className="text-xs font-medium bg-teal-50 text-teal-700 px-2.5 py-0.5 rounded-full">
-                {entry.feeling}
-              </span>
+              <span className="text-xl font-black text-slate-800">{entry.content}</span>
             </div>
-            <p className="text-sm text-slate-700 leading-relaxed">{entry.content}</p>
+            {entry.feeling === 'Great' && <span className="text-3xl">😊</span>}
+            {entry.feeling === 'Okay' && <span className="text-3xl">😐</span>}
+            {entry.feeling === 'Not Good' && <span className="text-3xl">😔</span>}
+            {entry.feeling === 'Pain' && <CheckCircle2 className="w-8 h-8 text-alert" />}
           </div>
         ))}
       </div>

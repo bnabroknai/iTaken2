@@ -39,98 +39,101 @@ export function InputModal({ type, onClose }: InputModalProps) {
       amount,
       ...(includeMood ? { mood, energy } : {})
     });
+    setItem('');
+    setAmount('');
     onClose();
   };
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-md p-4">
         <motion.div
           initial={{ opacity: 0, y: '100%' }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: '100%' }}
-          className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto"
+          className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-8 shadow-2xl flex flex-col max-h-[90vh] overflow-y-auto border-t-8 border-primary"
         >
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-semibold text-slate-800">
-              Log {type === 'food' ? 'Food / Drink' : 'Medication'}
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-3xl font-extrabold text-primary">
+              Log {type === 'food' ? 'My Food' : 'My Medicine'}
             </h2>
-            <button onClick={onClose} className="p-2bg-slate-100 rounded-full text-slate-500">
-              <X className="w-6 h-6" />
+            <button onClick={onClose} className="p-3 bg-slate-100 rounded-full text-slate-600 border-2 border-slate-200">
+              <X className="w-8 h-8" />
             </button>
           </div>
 
-          <div className="space-y-5">
+          <div className="space-y-8">
             <div>
-              <label className="text-sm font-medium text-slate-600 block mb-1">Item Name</label>
+              <label className="text-xl font-bold text-slate-700 block mb-3">What was it?</label>
               <div className="relative">
                 <input
                   type="text"
                   value={item}
                   onChange={(e) => setItem(e.target.value)}
-                  placeholder={type === 'food' ? "e.g., Apple, Salty Soup" : "e.g., Ibuprofen, Tylenol"}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 pr-12 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"
+                  placeholder={type === 'food' ? "e.g., Apple" : "e.g., Aspirin"}
+                  className="w-full bg-slate-50 border-4 border-slate-200 rounded-2xl px-6 py-5 pr-16 text-2xl font-medium focus:outline-none focus:border-primary transition-colors"
                 />
                 <button
                   onClick={toggleListening}
                   className={cn(
-                    "absolute top-1/2 -translate-y-1/2 right-2 p-2 rounded-full transition-all",
-                    isListening ? "bg-red-500 text-white animate-pulse" : "bg-slate-200 text-slate-600 hover:bg-slate-300"
+                    "absolute top-1/2 -translate-y-1/2 right-3 p-3 rounded-full transition-all border-2",
+                    isListening ? "bg-alert text-white animate-pulse border-white" : "bg-slate-200 text-slate-700 border-slate-300"
                   )}
+                  aria-label="Use Voice"
                 >
-                  <Mic className="w-5 h-5" />
+                  <Mic className="w-7 h-7" />
                 </button>
               </div>
             </div>
 
             <div>
-              <label className="text-sm font-medium text-slate-600 block mb-1">Amount / Dose</label>
+              <label className="text-xl font-bold text-slate-700 block mb-3">How much?</label>
               <input
                 type="text"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                placeholder={type === 'food' ? "e.g., 1 bowl, 200g" : "e.g., 200mg, 1 pill"}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"
+                placeholder={type === 'food' ? "e.g., 1 bowl" : "e.g., 1 pill"}
+                className="w-full bg-slate-50 border-4 border-slate-200 rounded-2xl px-6 py-5 text-2xl font-medium focus:outline-none focus:border-primary transition-colors"
               />
             </div>
 
-            <div className="pt-2 border-t border-slate-100">
-              <label className="flex items-center space-x-2 cursor-pointer mb-4">
+            <div className="pt-4 border-t-2 border-slate-100">
+              <label className="flex items-center space-x-4 cursor-pointer mb-6">
                 <input 
                   type="checkbox" 
                   checked={includeMood} 
                   onChange={(e) => setIncludeMood(e.target.checked)} 
-                  className="w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
+                  className="w-8 h-8 text-primary rounded-lg border-4 border-slate-300 focus:ring-primary"
                 />
-                <span className="text-slate-700 font-medium text-sm">Log current mood & energy (optional)</span>
+                <span className="text-slate-800 font-bold text-lg text-left">Add how I feel now</span>
               </label>
 
               {includeMood && (
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div className="bg-orange-50 p-4 rounded-2xl border border-orange-100">
-                    <div className="flex items-center space-x-2 mb-3 text-orange-700">
-                      <Smile className="w-5 h-5" />
-                      <label className="font-medium">Mood</label>
+                <div className="grid grid-cols-1 gap-6 mb-4">
+                  <div className="bg-orange-50 p-6 rounded-3xl border-2 border-orange-200">
+                    <div className="flex items-center space-x-3 mb-4 text-orange-800">
+                      <Smile className="w-8 h-8" />
+                      <label className="text-xl font-bold">Mood</label>
                     </div>
                     <input 
                       type="range" min="1" max="10" value={mood} 
                       onChange={(e) => setMood(Number(e.target.value))}
-                      className="w-full accent-orange-500"
+                      className="w-full h-12 accent-orange-500"
                     />
-                    <div className="text-center mt-1 font-bold text-orange-600">{mood}/10</div>
+                    <div className="text-center mt-2 text-2xl font-black text-orange-700">{mood} / 10</div>
                   </div>
 
-                  <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
-                    <div className="flex items-center space-x-2 mb-3 text-emerald-700">
-                      <Activity className="w-5 h-5" />
-                      <label className="font-medium">Energy</label>
+                  <div className="bg-emerald-50 p-6 rounded-3xl border-2 border-emerald-200">
+                    <div className="flex items-center space-x-3 mb-4 text-emerald-800">
+                      <Activity className="w-8 h-8" />
+                      <label className="text-xl font-bold">Energy</label>
                     </div>
                     <input 
                       type="range" min="1" max="10" value={energy} 
                       onChange={(e) => setEnergy(Number(e.target.value))}
-                      className="w-full accent-emerald-500"
+                      className="w-full h-12 accent-emerald-500"
                     />
-                    <div className="text-center mt-1 font-bold text-emerald-600">{energy}/10</div>
+                    <div className="text-center mt-2 text-2xl font-black text-emerald-700">{energy} / 10</div>
                   </div>
                 </div>
               )}
@@ -139,10 +142,10 @@ export function InputModal({ type, onClose }: InputModalProps) {
             <button
               onClick={handleSave}
               disabled={!item}
-              className="w-full bg-slate-900 text-white rounded-xl py-4 text-lg font-semibold flex items-center justify-center space-x-2 disabled:opacity-50 active:scale-[0.98] transition-transform"
+              className="w-full bg-primary text-white rounded-2xl py-6 text-2xl font-black flex items-center justify-center space-x-4 disabled:opacity-50 active:scale-[0.98] transition-transform shadow-xl"
             >
-              <Check className="w-5 h-5" />
-              <span>Save Log</span>
+              <Check className="w-8 h-8" strokeWidth={4} />
+              <span>SAVE NOW</span>
             </button>
           </div>
         </motion.div>
